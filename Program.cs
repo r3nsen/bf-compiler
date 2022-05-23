@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace bf_compiler
 {
@@ -14,6 +11,7 @@ namespace bf_compiler
         // compilador - machine code        
         static void Main(string[] args) // filename --run
         {
+            args = new string[] { "r3nsen.bf", "-r" };
             if (args.Length < 2)
             {
                 Console.WriteLine("não há argumentos suficientes.");
@@ -34,7 +32,7 @@ namespace bf_compiler
                     case "-r": run = true; break;
                     default:
                         Console.WriteLine("argumento {0} não reconhecido.", args[argId]);
-                        return;                        
+                        return;
                 }
 
                 ++argId;
@@ -42,7 +40,40 @@ namespace bf_compiler
 
             if (run)
             {
-                Console.WriteLine("running");
+                Console.WriteLine("simulando: ");
+                simulate(args[0]);
+            }
+            Console.ReadKey();
+        }
+
+        private static void simulate(string v)
+        {
+            byte[] memory = new byte[256];
+            int memoryAddr = 0;
+            int[] blockref = new int[256];
+            int blockid = 0;
+            string code = File.ReadAllText(v);
+            for (int i = 0; i < code.Length; i++)
+            {
+                switch (code[i])
+                {
+                    case '+': ++memory[memoryAddr]; break;
+                    case '-': --memory[memoryAddr]; break;
+                    case '>': ++memoryAddr; break;
+                    case '<': --memoryAddr; break;
+                    case '.': Console.Write((char)memory[memoryAddr]); break;
+                    case '[': blockref[blockid++] = i; break;
+                    case ']':
+                        if (memory[memoryAddr] > 0)
+                        {
+                        //    --memory[memoryAddr];
+                            i = blockref[blockid - 1];
+                            break;
+                        }
+                        blockid--; break;
+
+                    default: break;
+                }
             }
         }
     }
